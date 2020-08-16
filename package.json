@@ -1,0 +1,43 @@
+{
+  "name": "courses",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Courses",
+  "author": "Arthur Nesterenko",
+  "license": "MIT",
+  "dependencies": {
+    "@emotion/core": "^10.0.34",
+    "@emotion/styled": "^10.0.27",
+    "@rocketseat/gatsby-theme-docs": "latest",
+    "dotenv": "^8.2.0",
+    "emotion-theming": "^10.0.27",
+    "gatsby": "latest",
+    "gatsby-plugin-canonical-urls": "^2.1.19",
+    "gatsby-plugin-google-analytics": "^2.1.34",
+    "gatsby-plugin-manifest": "^2.2.37",
+    "gatsby-plugin-offline": "^3.0.32",
+    "gatsby-plugin-sitemap": "^2.2.26",
+    "prop-types": "^15.7.2",
+    "react": "latest",
+    "react-dom": "latest",
+    "react-headroom": "^3.0.0",
+    "react-icons": "^3.10.0",
+    "react-switch": "^5.0.1"
+  },
+  "devDependencies": {
+    "husky": "^4.2.5",
+    "prettier": "^2.0.5",
+    "pretty-quick": "^2.0.1"
+  },
+  "keywords": [
+    "gatsby",
+    "rocketseat",
+    "gatsby-starter"
+  ],
+  "scripts": {
+    "build": "gatsby build",
+    "start": "gatsby develop",
+    "serve": "gatsby serve",
+    "clean": "gatsby clean"
+  }
+}
