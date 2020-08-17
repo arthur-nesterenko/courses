@@ -1,0 +1,43 @@
+---
+title: "Знакомство с JSX"
+---
+
+`JSX` — расширение языка JavaScript. Мы рекомендуем использовать его, когда требуется объяснить `React`, как должен выглядеть `UI`. `JSX` напоминает язык шаблонов, наделённый силой `JavaScript`. `JSX` производит «элементы» `React`.
+
+`React` исходит из принципа, что логика рендеринга неразрывно связана с прочей логикой `UI`: с тем, как обрабатываются события, как состояние изменяется во времени и как данные готовятся к отображению.
+Вместо того, чтобы искусственно разделить технологии, помещая разметку и логику в разные файлы, `React` разделяет ответственность с помощью слабо связанных единиц, называемых «компоненты», которые содержат и разметку, и логику.
+
+##### Почитать
+
+- https://ru.reactjs.org/docs/introducing-jsx.html
+- https://habr.com/ru/post/319270/
+
+## React без JSX
+
+Каждый JSX-элемент — это просто синтаксический сахар для вызова
+`React.createElement(component, props, ...children)`.
+Так что всё, что вы можете сделать при помощи JSX, может быть сделано на чистом `JavaScript`.
+
+c JSX
+
+```javascript
+class Hello extends React.Component {
+  render() {
+    return <div>Hello</div>;
+  }
+}
+```
+
+без JSX
+
+```javascript
+class Hello extends React.Component {
+  render() {
+    return React.createElement("div", null, `Hello`);
+  }
+}
+```
+
+##### Почитать
+
+- https://ru.reactjs.org/docs/react-without-jsx.html

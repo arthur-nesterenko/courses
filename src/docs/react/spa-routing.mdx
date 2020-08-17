@@ -1,0 +1,467 @@
+---
+title: SPA & Routing
+---
+
+# SPA
+
+## Предыстория
+
+Со времен зарождения современного фронтенда были попытки сделать продвинутый фронт с многостраничным
+интерфейсом. Технически это не представляет особой сложности, однако нет особого смысла в
+многостраничном интерфейсе без ссылок на эти страницы. С этим же были проблемы - при любой
+попытке смены адресной строки браузер упорно переходил на другую страницу, т.е. _обращался к
+серверу_ и _сбрасывал JS, подгружая новые скрипты_. Это если страница реально существовала
+на сервере. Обычно же **404**.
+
+## # -ссылки
+
+При переходе по ссылкам внутри страницы (используя ) браузер, очевидно, страницу не перезагружает.
+Этим длительное время пользовались первые **SPA** типа **gmail**. На таких сервисах
+роутинг, реализуется _после_ символа `#` в адресе,
+таким образом с точки зрения браузера все эти "переходы" по ссылкам происходят внутри одной
+страницы, чем и пользуется **JS**, прослушивая события изменения адреса и перерисовывая содержимое
+страницы.
+
+## HTML5
+
+**HTML5** позволяет отлавливать _любое_ изменение адреса, а так же управлять историей браузера.
+Таким образом можно полностью просимулировать работу страниц внутри **SPA**, как будто бы они
+загружаются с сервера.
+
+## Почему это называется **SPA** ?
+
+Потому что физически это _одна_ страница, которая просто показывает пользователю
+фейковые адреса и разный **DOM**.
+
+## React
+
+С точки зрения **React** каждая страница - это компонент. Роутинг прописывается в
+декларативной форме в **JSX**.
+
+### Установка
+
+```bash
+$ npm install react-router-dom
+```
+
+### Подключение
+
+[React-router](https://reactrouter.com/web/guides/quick-start)
+
+```jsx
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+```
+
+### JSX
+
+```jsx
+import React from "react";
+import { BrowserRouter as Router, Switch, Route, Link } from "react-router-dom";
+
+export default function App() {
+  return (
+    <Router>
+      <div>
+        <nav>
+          <ul>
+            <li>
+              <Link to="/">Home</Link>
+            </li>
+            <li>
+              <Link to="/about">About</Link>
+            </li>
+            <li>
+              <Link to="/users">Users</Link>
+            </li>
+          </ul>
+        </nav>
+
+        {/* A <Switch> looks through its children <Route>s and
+            renders the first one that matches the current URL. */}
+        <Switch>
+          <Route path="/about">
+            <About />
+          </Route>
+          <Route path="/users">
+            <Users />
+          </Route>
+          <Route path="/">
+            <Home />
+          </Route>
+        </Switch>
+      </div>
+    </Router>
+  );
+}
+```
+
+- `Router` обрамляет все маршруты и обеспечивает интеграцию с **Browser History API**
+- `Route` принимает `props`: - `path` - шаблон адреса, как в **express** (обратите внимание на `param1` и `param2`) - `exact` - нужен что бы маршрут срабатывал только при полном совпадении.
+  Route render methods
+  Рекомендуемый метод рендеринга чего-либо с `<Route>` - использовать дочерние элементы, как показано выше. Однако есть несколько других методов, которые вы можете использовать для рендеринга чего-либо с помощью `<Route>`.
+  Они предназначены в основном для поддержки приложений, которые были созданы с более ранними версиями маршрутизатора до того, как были введены хуки.
+  `<Route component>`
+  `<Route render>`
+  `<Route children> function`
+
+> Вы должны использовать только один из этих свойств для данного `<Route>`.
+
+- `Switch` [Official documentation](https://reactrouter.com/web/api/Switch)
+
+`Switch` выбирает **первый** подходящий маршрут, остальные
+игнорирует:
+
+Если`URL`-адрес равен `/about`, то все элементы `<About>`, `<User>` и `<NoMatch>` будут отображаться, потому что все они соответствуют пути. Это сделано специально, что позволяет нам компоновать `<Route>` в наших приложениях разными способами, такими как боковые панели и хлебные крошки, вкладки начальной загрузки и т. Д.
+
+Однако иногда мы хотим выбрать для рендеринга только один `<Route>`. Если мы находимся в `/about`, мы не хотим также сопоставлять `/:user` (или показывать нашу страницу «404»).
+Вот как это сделать с помощью `Switch:`
+
+```jsx
+import { Route, Switch } from "react-router";
+
+let routes = (
+  <Switch>
+    <Route exact path="/">
+      <Home />
+    </Route>
+    <Route path="/about">
+      <About />
+    </Route>
+    <Route path="/:user">
+      <User />
+    </Route>
+    <Route>
+      <NoMatch />
+    </Route>
+  </Switch>
+);
+```
+
+Теперь, если мы находимся в `/`, `<Switch>` начнет искать соответствующий `<Route>`.
+`<Route path = "/about" />` будет соответствовать, а `<Switch>` перестанет искать совпадения и отобразит `<About>`. Точно так же, если мы находимся в `/michael`, тогда будет отображен `<User>`.
+
+Принимают параметры шаблона адреса в `props`
+
+```jsx
+import React from "react";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Link,
+  useRouteMatch,
+  useParams,
+} from "react-router-dom";
+
+export default function App() {
+  return (
+    <Router>
+      <div>
+        <ul>
+          <li>
+            <Link to="/">Home</Link>
+          </li>
+          <li>
+            <Link to="/about">About</Link>
+          </li>
+          <li>
+            <Link to="/topics">Topics</Link>
+          </li>
+        </ul>
+
+        <Switch>
+          <Route path="/about">
+            <About />
+          </Route>
+          <Route path="/user/:id">
+            <User />
+          </Route>
+          <Route path="/">
+            <Home />
+          </Route>
+        </Switch>
+      </div>
+    </Router>
+  );
+}
+
+function Home() {
+  return <h2>Home</h2>;
+}
+
+function About() {
+  return <h2>About</h2>;
+}
+
+function User() {
+  const { id } = useParams();
+  return <h3>Requested User ID: {id}</h3>;
+}
+```
+
+### `Link`
+
+**Компонент** `Link` предназначен для создания ссылок.
+
+```jsx
+<Link to="/">...go to main</Link>
+```
+
+### `Redirect`
+
+Иногда нужно назначить перенаправление с одного адреса на другой.
+В таком случае поможет компонент `Redirect`:
+
+```jsx
+<Router>
+  <div>
+    <Switch>
+      <Route path="/about">
+        <About />
+      </Route>
+      <Route path="/">
+        <Home />
+      </Route>
+      <Redirect from="/home" to="/" />
+      <Route>
+        <NotFound />
+      </Route>
+    </Switch>
+  </div>
+</Router>
+```
+
+При посещении адреса `/home` будет автоматически происходить переход на `/`
+и работать компонент `Home`
+
+#### Переход на другую страницу из кода
+
+##### `Redirect`
+
+Зачастую после сохранения тех или иных форм нужно перейти на другую страницу,
+т. е. сменить адрес в адресной строке таким образом, что бы **React Router**
+это обработал согласно конфигурации маршрутов.
+
+Это можно сделать с помощью **рендеринга** компонента `Redirect` без
+`from`.
+
+Для этого отправьте в `state` тот или иной маркер перехода что бы спровоцировать
+перерисовку.
+
+##### `useHistory` [Official documentation](https://reactrouter.com/web/api/Hooks/usehistory)
+
+Хук useHistory дает вам доступ к экземпляру истории, который вы можете использовать для навигации.
+
+```jsx
+import { useHistory } from "react-router-dom";
+
+function HomeButton() {
+  let history = useHistory();
+
+  function handleClick() {
+    history.push("/home");
+  }
+
+  return (
+    <button type="button" onClick={handleClick}>
+      Go home
+    </button>
+  );
+}
+
+function HomeButton() {
+  let history = useHistory();
+
+  function handleClick() {
+    history.push("/home");
+  }
+
+  return (
+    <button type="button" onClick={handleClick}>
+      Go home
+    </button>
+  );
+}
+```
+
+#### useParams [Official documentation](https://reactrouter.com/web/api/Hooks/useparams)
+
+`useParams` возвращает объект пар key / value параметров URL.
+Используйте его для доступа к параметрам `match.params` текущего `<Route>`.
+
+```jsx
+import ReactDOM from "react-dom";
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  useParams,
+} from "react-router-dom";
+
+function BlogPost() {
+  let { slug } = useParams();
+  return <div>Now showing post {slug}</div>;
+}
+
+ReactDOM.render(
+  <Router>
+    <Switch>
+      <Route exact path="/">
+        <HomePage />
+      </Route>
+      <Route path="/blog/:slug">
+        <BlogPost />
+      </Route>
+    </Switch>
+  </Router>,
+  node
+);
+```
+
+### Вложенные маршруты
+
+В относительно крупных проектах возникает надобность разделить разные части
+сайта на разные наборы маршрутов.
+
+**Например**:
+
+- `/` Главная страница
+- `/dashboard` Личный кабинет
+- **...**
+- `/admin` Админка
+  - `/admin/`
+  - `/admin/dashboard` Админский кабинет
+  - **...**
+
+В такой структуре логично отделить маршруты общей и административной части
+сайта.
+
+```jsx
+<Router>
+  <div>
+    <Switch>
+      <Route path="/" exact>
+        <MainPage />
+      </Route>
+      <Route path="/dashboard">
+        <DashboardPage />
+      </Route>
+      <Route path="/admin">
+        <AdminPage />
+      </Route>
+      <Route>
+        <NotFound />
+      </Route>
+    </Switch>
+  </div>
+</Router>;
+
+const AdminPage = () => {
+  let root = this.props.match.url;
+  let { path, url } = useRouteMatch();
+  return (
+    <div>
+      <h1>Admin</h1>
+      <ul>
+        <li>
+          <Link to={url}>Admin oage</Link>
+        </li>
+        <li>
+          <Link to={`${url}/dashboard`}>Admin dashboard</Link>
+        </li>
+      </ul>
+      <Switch>
+        <Route exact path={path}>
+          <AdminMainPage />
+        </Route>
+        <Route path={`${path}/dashboard`}>
+          <AdminDashboardPage />
+        </Route>
+      </Switch>
+    </div>
+  );
+};
+```
+
+# Посмотреть
+
+- https://www.youtube.com/watch?v=CZeulkp1ClA
+- https://www.youtube.com/watch?v=sLobT_UKKdw
+
+# Практика [Исходный код](https://codesandbox.io/s/routing-bkwuh)
+
+[API документация](https://restcountries.eu/#api-endpoints-all)
+
+Используя [код](https://codesandbox.io/s/routing-bkwuh), подключить роутер и разделить приложение на 2 странице
+
+- Home page - route - `/`
+
+должна содержать список всех стран. По клику на страну должен быть переход на страницу информации о стране.
+
+- Country page - route - '/country/:name'
+
+где `name` динамический парметр, зависит от выбраный страны
+
+**Дополнительно**
+
+- показывать `region`, `subregion` и `currencies`
+
+# ДЗ
+
+**Reddit feeds** [API DOC](https://www.reddit.com/dev/api/)
+_Как это может выглядеть [github repository](https://github.com/arthur-nesterenko/reddit-feeds)_
+Должен иметь как минимум для 2 роута:
+
+- Home
+- Feed
+
+w
+
+### Home page
+
+На странице должно быть изначально 10 записей, а также должна быть функция разбиения по страницам с отображением кнопок «Далее» и «Назад» в интерфейсе для перехода между страницами.
+
+Каждая запись должна содержать следующее:
+
+- thumbnail
+- created (as readable date)
+- num_comments
+- author
+- score
+- permalink (as a link)
+- title
+
+* Разрешить пользователю изменять, из какого субреддита извлекаются элементы
+* Разрешить пользователю переключаться между 5, 10 или 25 записями. При изменении этого параметра данные будут загружаться с Reddit.
+* По клику на запись, пользователь должен быть направлен на страницу фида (можно использовать permalink поле)
+
+### Feed page
+
+Страница должна загружать данные о reddit
+
+и выводить:
+
+- thumbnail
+- created (as readable date)
+- num_comments
+- author
+- score
+- title
+
+_Дополнительно_ разрешить пользователям читать комментарии к записи. Чтобы найти комментарии к записи, введите запись и добавьте к URL-адресу ".json".
+(e.g.https: //www.reddit.com/r/angular/comments/8nvemc/rangular_what_do_you_want_from_your_mod_team.json)
+
+_Показывать комментарии в виде цепочки, как это делается на странице Reddit. См. Пример здесь: https://www.reddit.com/r/angular/comments/8nvemc/rangular_what_do_you_want_from_your_mod_team/_
+
+##### Техническая информация
+
+Вы можете получить запись JSON-фида из любого субреддита, используя этот URL:
+`https://www.reddit.com/r/ {SUBREDDIT_NAME} .json`
+
+**например**: https://www.reddit.com/r/angular.json
+Этот URL поддерживает следующие параметры:
+limit = (число) Количество записей для выборки (по умолчанию: 25)
+before = (идентификатор записи) Показать записи перед идентификатором записи. (например, before: ”t3_758x8e”) after = (идентификатор записи) Показать записи после идентификатора записи. (например, после: "t3_758x8e")
+ех. https://www.reddit.com/r/angular.json?limit=25&after=t3_758x8e
+В ответе JSON есть свойства (после и до), содержащие идентификаторы записей, которые можно использовать для разбивки на страницы. Как вы это делаете - часть теста.
+Все слова, выделенные жирным шрифтом выше, являются полями, которые существуют в фиде JSON.

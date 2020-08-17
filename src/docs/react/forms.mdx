@@ -1,0 +1,475 @@
+---
+title: Forms
+---
+
+Работа элементов HTML-форм в React немного отличается от работы других DOM-элементов,
+потому что элементы форм по своей природе обладают некоторым внутренним состоянием.
+К примеру, данная форма в нативном HTML принимает только имя:
+
+```jsx
+<form>
+  <label>
+    Name: <input type="text" name="name" />
+  </label>
+  <input type="submit" value="Submit" />
+</form>
+```
+
+Эта форма имеет поведение HTML-формы по умолчанию: просмотр новой страницы,
+когда пользователь посылает форму. Если вам необходимо это поведение в React,
+оно работает как обычно. Но в большинстве случаев удобно иметь JavaScript-функцию,
+которая обрабатывает отправку формы и имеет доступ к данным, которые пользователь
+ввел в форму. Стандартным способом достижения этой цели является использование
+подхода «контролируемые компоненты».
+
+## Контролируемые компоненты
+
+В HTML-элементы форм, такие как `<input>`, `<textarea>` и `<select>` как правило хранят
+свое собственное состояние и обновляют его на основании пользовательского ввода.
+В React модифицируемое состояние как правило является собственностью компонентов
+и обновляется только с помощью `setState()`.
+
+Мы можем скомбинировать эти обе особенности, делая состояние React
+`“единственным источником достоверной информации (истины)”`.
+В свою очередь React-компонент, который отрисовывает форму, также контролирует,
+что происходит на этой форме в ответ на последующий ввод пользователя.
+Элемент ввода формы (например, input), значение которого контролируется React,
+в этом случае называется `«контролируемый компонент»`.
+
+В большинстве случаев мы рекомендуем использовать контролируемые компоненты для реализации форм.
+В контролируемом компоненте данные формы обрабатываются компонентом React.
+
+## Основы работы с формами
+
+Пусть у нас в `this.state.value` хранится текст 'привет':
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { value: "привет" };
+  }
+}
+```
+
+Теперь в методе `render` сделаем инпут, и таже же сделаем так,
+чтобы в value инпута записалось значение из `this.state.value`:
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { value: "привет" };
+  }
+
+  render() {
+    return (
+      <div>
+        <input value={this.state.value} />
+      </div>
+    );
+  }
+}
+```
+
+Если мы этот код - на экране мы увидим инпут с текстом 'привет'.
+Однако, нас будет ждать сюрприз: мы не сможем поменять текст нашего инпута.
+Почему так? Потому что мы четко сказали, что в `value` инпута должно быть
+значение из `this.state.value`. Это значение не меняется - и значит `value`
+инпута тоже не будет меняться, даже если вы вручную что-то попытаетесь туда написать.
+
+Понятно, что такое поведение не очень удобно и нам нужно что-то с этим сделать.
+Что именно: нужно организовать `двухстороннее связывание - this.state.value и value`
+инпута должны зависеть друг от друга: при изменении одного должен меняться и другой.
+
+Первый шаг для этого следующий: нужно к нашему инпуту добавить событие `onChange`
+и привязать к нему какой-нибудь метод, назовем его, к примеру, handleChange.
+
+```jsx
+class App extends React.Component {
+  constructor() {
+    super();
+    this.state = { value: "привет" };
+  }
+
+  //Срабатывает при любом изменении инпута:
+  handleChange() {
+    //тут какой-то код
+  }
+
+  render() {
+    return (
+      <div>
+        <input
+          value={this.state.value}
+          onChange={this.handleChange.bind(this)}
+        />
+      </div>
+    );
+  }
+}
+```
+
+Как работает событие `onChange` ? - оно срабатывает при попытке любого изменения инпута.
+Например, если мы пытаемся ввести в него какой-то текст, то `onChange` будет срабатывать
+при каждом вводе символа.
+
+И, даже если текст инпута не будет меняться из-за привязанного `this.state.value`,
+событие `onChange` будет срабатывать и каждый раз вызывать метод `handleChange`.
+Чтобы содержимое инпута могло изменяться, для этого в методе `handleChange`
+нужно в свойство `this.state.value` записывать содержимое атрибута value нашего инпута.
+
+### Работа с textarea
+
+Работа с текстареа осуществляется очень похожим на работу с инпутом образом -
+также добавляется атрибут `value` и событие `onChange`.
+
+Cледующий код - выведит на экран textarea, в который можно будет повводить текст.
+Все изменения будут отображаться в абзаце над нашим textarea:
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { value: "привет" };
+  }
+
+  //Записываем value текстареа в this.state.value:
+  handleChange(event) {
+    this.setState({ value: event.target.value });
+  }
+
+  render() {
+    return (
+      <div>
+        <p>текст: {this.state.value}</p>
+        <textarea
+          value={this.state.value}
+          onChange={this.handleChange.bind(this)}
+        />
+      </div>
+    );
+  }
+}
+```
+
+### Чекбоксы
+
+Работа с чекбоксами также осуществляется по схожему принципу, только вместо
+атрибута `value` мы указываем атрибут `checked`.
+Если в этот атрибут передать `true` - то чекбокс будет отмечен, а если `false` - не будет отмечен:
+
+```jsx
+return <div>
+	<input
+		type="checkbox"
+		checked={тут должно быть true или false}
+	/>
+</div>;
+```
+
+Конечно же, обычно в `checked` передается стейт,
+который может принимать только два значения: или `true`, или `false`.
+
+Так же, как и при работе с инпутами, если жестко задать значение атрибута `checked` - состояние чекбокса нельзя будет сменить.
+
+Для решения этой проблемы поступим так: будем по изменению чекбокса менять
+`this.state.checked` на противоположное ему значение, то есть на `!this.state.checked`.
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { checked: true };
+  }
+
+  //Меняем this.state.checked на противоположный:
+  handleCheckboxChange(event) {
+    this.setState({ checked: !this.state.checked });
+  }
+
+  render() {
+    return (
+      <div>
+        <input
+          type="checkbox"
+          checked={this.state.checked}
+          onChange={this.handleCheckboxChange.bind(this)}
+        />
+      </div>
+    );
+  }
+}
+```
+
+### Селекты
+
+Давайте теперь займемся выпадающими списками `select`.
+Работа с ними также практически не отличается от работы с инпутами и чекбоксами.
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { value: "javascript" };
+  }
+
+  //Изменяем this.state.value при изменении селекта:
+  handleSelectChange(event) {
+    this.setState({ value: event.target.value });
+  }
+
+  render() {
+    return (
+      <div>
+        <p>Ваш выбор: {this.state.value}</p>
+        <select
+          value={this.state.value}
+          onChange={this.handleSelectChange.bind(this)}
+        >
+          <option>html</option>
+          <option>css</option>
+          <option>javascript</option>
+          <option>php</option>
+        </select>
+      </div>
+    );
+  }
+}
+```
+
+Изначально выбран будет пункт списка со значением 'javascript' и этот выбор будет отражаться в нашем абзаце.
+Но если выбор поменять - в абзаце он тоже поменяется.
+
+Давайте теперь тегам `option` дадим атрибут `value`, как это обычно и делается:
+
+```jsx
+<select>
+  <option value="0">Язык HTML</option>
+  <option value="1">Язык CSS</option>
+  <option value="2">Язык JavaScript</option>
+  <option value="3">Язык PHP</option>
+</select>
+```
+
+На самом деле без атрибута `value`, как это было сделано выше - плохо.
+Почему плохо: ведь текст `option` может меняться и это повлияет на работу нашего скрипта.
+К примеру, вместо текста 'javascript' мы сделаем текст 'Язык JavaScript'
+и теперь строчка `this.state = {value: 'javascript'}` просто не будет работать.
+
+А вот если мы привяжемся к `value` и напишем `this.state = {value: 2}` -
+все будет работать независимо от того, что написано в самом тексте тега `option`.
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { value: 0 };
+  }
+
+  //Изменяем this.state.value при изменении селекта:
+  handleSelectChange(event) {
+    this.setState({ value: event.target.value });
+  }
+
+  render() {
+    return (
+      <div>
+        <p>Ваш выбор: {this.state.value}</p>
+        <select
+          value={this.state.value}
+          onChange={this.handleSelectChange.bind(this)}
+        >
+          <option value="0">Язык HTML</option>
+          <option value="1">Язык CSS</option>
+          <option value="2">Язык JavaScript</option>
+          <option value="3">Язык PHP</option>
+        </select>
+      </div>
+    );
+  }
+}
+```
+
+> Запустите этот код и повыбирайте разные значения в селекте. Вы увидите проблему - в абзац будет выводится не значение тега option, а значение атрибута value!
+
+Итак, если вы запустите этот код, то увидите проблему - строка `<p>Ваш выбор: {this.state.value}</p>` будет выводить value нашего option, а никак не значение.
+
+Для того, чтобы поправить эту проблему,
+вначале сделаем следующее: не будем создавать теги option вручную, а сделаем
+массив `this.state.langs` и из этого массива и сформируем наш селект,
+у нас по-прежнему есть строка `this.state.value`, которая выводит `value` оптиона `option`,
+а не его значение:
+
+```jsx
+<p>Ваш выбор: {this.state.value}</p>
+```
+
+Давайте поправим ее так, чтобы она подтягивала значение из массива
+`this.state.langs` по его ключу `this.state.value`:
+
+```jsx
+<p>Ваш выбор: {this.state.langs[this.state.value]}</p>
+```
+
+Объединим все и получим:
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      value: 0, //тут теперь задаем значение из атрибута value
+      langs: ["Язык HTML", "Язык CSS", "Язык JavaScript", "Язык PHP"],
+    };
+  }
+
+  //Изменяем this.state.value при изменении селекта:
+  handleSelectChange(event) {
+    this.setState({ value: event.target.value });
+  }
+
+  render() {
+    //Формируем в цикле набор из тегов <option>:
+    const options = this.state.langs.map((item, index) => {
+      return (
+        <option key={index} value={index}>
+          {item}
+        </option>
+      );
+    });
+
+    return (
+      <div>
+        <p>Ваш выбор: {this.state.langs[this.state.value]}</p>
+        <select
+          value={this.state.value}
+          onChange={this.handleSelectChange.bind(this)}
+        >
+          {options}
+        </select>
+      </div>
+    );
+  }
+}
+```
+
+### Радиокнопки
+
+Работа с `radio` несколько отличается, к примеру, от тех же чекбоксов.
+
+Проблема в том, что у нескольких радио будет один и тот же стейт, но разные `value`.
+
+Поэтому работа происходит следующем образом: в атрибут `value` записывают значение радио,
+а в атрибут `checked` - специальное условие, которое проверяет, равен ли
+`this.state.option` определенному значению.
+Если равен - радиокнопка станет отмеченной, а если не равен - будет не отмеченной.
+
+Пример: пусть `this.state.option` - это стейт, в котором будет хранится значение радио.
+Сделаем 2 радиокнопки и дадим одной `value="option1"`, а второй - `value="option2"`.
+
+Тогда для проверки того, будет ли первая радиокнопка отмечена, ей в атрибут `checked`
+запишем следующее: `checked={this.state.option == 'option1'}`.
+
+Получится, что если в `this.state.option лежит option1` первая радиокнопочка будет отмеченной,
+а если не лежит - то не будет.
+
+Аналогичную строку запишем и для второй радиокнопки - `checked={this.state.option == 'option2'}`,
+только здесь мы сравниванием `this.state.option уже с option2`.
+
+Для каждой радио также напишем атрибут `onChange` и прикрепим к нему метод `handleRadioChange`.
+Ну, здесь все как обычно - так же, как для инпутов и чекбоксов.
+
+Давайте соберем все вместе и запустим:
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { option: "option1" };
+  }
+
+  //Изменяет this.state.option при изменении радио:
+  handleRadioChange(event) {
+    this.setState({ option: event.target.value });
+  }
+
+  render() {
+    return (
+      <div>
+        <p>Ваш выбор: {this.state.option}</p>
+
+        <input
+          name="lang"
+          type="radio"
+          value="option1"
+          checked={this.state.option == "option1"}
+          onChange={this.handleRadioChange.bind(this)}
+        />
+
+        <input
+          name="lang"
+          type="radio"
+          value="option2"
+          checked={this.state.option == "option2"}
+          onChange={this.handleRadioChange.bind(this)}
+        />
+      </div>
+    );
+  }
+}
+```
+
+## Значение по умолчанию
+
+Иногда бывает следующая ситуация: вы хотите сделать так, чтобы по умолчанию
+в инпуте уже было какое-то значение.
+При этом вы хотите, чтобы из стейта было взято только начальное значение инпута,
+а сам инпут не был бы привязан к этому стейту.
+
+Способ сделать это есть: нужно воспользоваться атрибутом `defaultValue`:
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { value: "привет" };
+  }
+
+  render() {
+    return (
+      <div>
+        <input defaultValue={this.state.value} />
+      </div>
+    );
+  }
+}
+```
+
+> Запустите этот код - и вы увидите на экране инпут со значением 'привет'. Но это значение можно будет сменить, при этом `this.state.value` не поменяется - двухсторонней связи нет.
+
+Для чекбоксов существует аналогичный атрибут `defaultChecked`,
+с помощью которого можно задать начальное состояние (отмечен или нет):
+
+```jsx
+class App extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { checked: true };
+  }
+
+  render() {
+    return (
+      <div>
+        <input type="checkbox" defaultChecked={this.state.checked} />
+      </div>
+    );
+  }
+}
+```
+
+> Запустите этот код - и вы увидите на экране отмеченный чекбокс. Если понажимать на этот чекбокс, то его состояние будет меняться, а this.state.checked при этом меняться не будет - двухсторонней связи нет.
+
+# Почитать
+
+- https://ru.reactjs.org/docs/uncontrolled-components.html
