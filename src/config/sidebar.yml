@@ -1,14 +1,26 @@
 # Sidebar navigation
 
-- label: 'Introduction'
-  link: '/'
-- label: 'Getting started'
-  link: '/getting-started'
-- label: Usage
+- label: "Introduction"
+  link: "/"
+- label: React
   items:
-    - label: 'Creating docs'
-      link: '/usage/creating-docs'
-    - label: 'Navigation'
-      link: '/usage/navigation'
-    - label: 'Shadowing'
-      link: '/usage/shadowing'
+    - label: "Initial"
+      link: "/react/initial"
+    - label: "JSX"
+      link: "/react/jsx"
+    - label: "Props & State"
+      link: "/react/props-state"
+    - label: "Life cycles"
+      link: "/react/lifecycle"
+    - label: "List & Ref"
+      link: "/react/list-ref"
+    - label: "Forms"
+      link: "/react/forms"
+    - label: "Hooks"
+      link: "/react/base-hooks"
+    - label: "SPA & Routing"
+      link: "/react/spa-routing"
+    - label: "Redux"
+      link: "/react/redux"
+    - label: "Projects"
+      link: "/react/projects"
