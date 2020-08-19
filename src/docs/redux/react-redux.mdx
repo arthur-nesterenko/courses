@@ -1,0 +1,256 @@
+---
+title: React Redux
+image: /assets/react-redux.png
+---
+
+## Использование с React 👩‍💻
+
+> С самого начала нужно подчеркнуть, что Redux не имеет отношения к React.
+
+_Вы можете писать приложения Redux с помощью React, Angular, Ember, jQuery или ванильного JavaScript._
+
+Тем не менее, Redux особенно хорошо работает с React, потому что ое позволяяет описывать пользовательский интерфейс как функцию состояния,
+а Redux генерирует обновления состояния в ответ на действия.
+
+<img src="https://i1.wp.com/christianlydemann.com/wp-content/uploads/2018/06/93da0a4e-93fe-41b6-bcaa-1ded32445fd5-327-0000007d9ac202bd-1.jpg?fit=919%2C492&ssl=1" />
+
+<br />
+<br />
+<img src="https://miro.medium.com/max/1838/1*f3gS9znOZvX8HfCLg7T--Q.gif" />
+
+<Admonition type="note" title="Official React-Redux docs">
+  Официальная React-Redux документация at https://react-redux.js.org содержат
+  полное руководство о том, как использовать Redux и React вместе.
+</Admonition>
+
+### Установка
+
+```bash
+npm install react-redux redux
+```
+
+Eсли вы создаете новое приложение с помощью [create-react-app](https://create-react-app.dev/)
+
+можно воспользоваться флагом `--template`.
+
+```bash
+npx create-react-app my-app --template redux
+```
+
+Почитать подробнее о шаблонах можно [тут](https://create-react-app.dev/docs/custom-templates/).
+
+### Provider
+
+React Redux предоставляет `<Provider />`, который делает хранилище Redux доступным для остальной части вашего приложения:
+
+```jsx
+import React from "react";
+import ReactDOM from "react-dom";
+
+import { Provider } from "react-redux";
+import store from "./store";
+
+import App from "./App";
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  rootElement
+);
+```
+
+### connect()
+
+React Redux предоставляет вам функцию подключения для подключения вашего компонента к магазину.
+
+Обычно вы вызываете `connect` следующим образом:
+
+```jsx
+import { connect } from "react-redux";
+import { increment, decrement, reset } from "./actionCreators";
+
+// const Counter = ...
+
+const mapStateToProps = (state /*, ownProps*/) => {
+  return {
+    counter: state.counter,
+  };
+};
+
+const mapDispatchToProps = { increment, decrement, reset };
+
+export default connect(mapStateToProps, mapDispatchToProps)(Counter);
+```
+
+Сигнатура функции `connect`:
+
+- Первый параметр - функция, которая собирает нужную информацию из хранилища (в функцию передается текущее состояние хранилища) и возвращает объект с ключами, которые вам нужны в props.`
+- Второй параметр - объект, в котором ключами будут опять же свойства в props, а значениями - actionCreator-ы. connect автоматически обернет ваши actionCreator в dispatch, после чего можно спокойно вызывать this.props.actionName() - это вызовет store.dispatch(actionName())
+
+`connect` возвращает функцию, которая из любого компонента сделает компонент-обертку с вышеуказанными настройками.
+
+<img
+  src="https://prgssr.ru/images/development/javascript/redux-article-3-03.svg"
+  alt="app with redux"
+/>
+### Counter with redux step by step
+
+1.  Создаем Reducer
+
+```javascript lineNumbers=true
+import { combineReducers } from "redux";
+
+const initialState = { value: 0 };
+const counter = (state = initialState, action) => {
+  if (action.type === "increment") {
+    return {
+      ...state,
+      value: state.value + 1,
+    };
+  }
+  return state;
+};
+
+export default combineReducers({ counter });
+```
+
+#### combineReducers(reducers)
+
+Как только ваше приложение становится все более сложным,
+вы захотите разделить ваш функцию редюсер на отдельные функции, которые управляют независимыми частями состояния.
+
+Функция **combineReducers** преобразует объект, значениями которого являются различные функции редюсеры, в одну функцию редюсер, которую можно передать в метод **createStore**.
+
+Результирующий редюсер вызывает вложенные редюсеры и собирает их результаты в единый объект состояния.
+Состояние, созданное именами **combineReducers()**, сохраняет состояние каждого редуктора под их ключами, переданные в **combineReducers()**
+
+2. Создаем Redux store
+
+```javascript lineNumbers=true
+import { createStore } from "redux";
+import rootReducer from "./rootReducer";
+
+const store = createStore(rootReducer);
+
+export default store;
+```
+
+#### createStore(reducer, [preloadedState], [enhancer])
+
+Создает Redux стор которое хранит полное дерево состояния вашего приложения. Оно должно быть единственным стором в вашем приложении.
+
+3. Cоздаем компонент Counter
+
+```jsx lineNumbers
+import React from "react";
+import { connect } from "react-redux";
+
+// Props компонента приходят из функции connect
+
+const Counter = ({ count, increment }) => {
+  return (
+    <div>
+      <h1>Counter</h1>
+      <h2>{count}</h2>
+      <button onClick={increment}>Increment</button>
+    </div>
+  );
+};
+
+// Создаем функцию mapStateToProps которая будет транформировать состояние из Redux стора в props компонента Counter
+const mapStateToProps = (state) => ({
+  count: state.counter.value,
+});
+
+//Создаем функцию mapDispatchToProps которая будет передавать actionCreatord обернутые dispatch в props компонента Counter
+const mapDispatchToProps = (dispatch) => ({
+  increment: () => dispatch({ type: "increment" }),
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(Counter);
+```
+
+4. Оборачиваем наше приложение в Provider и передаем store
+
+```jsx
+import React from "react";
+import ReactDOM from "react-dom";
+
+import App from "./App";
+import { Provider } from "react-redux";
+import store from "./configureStore";
+
+const rootElement = document.getElementById("root");
+ReactDOM.render(
+  <Provider store={store}>
+    <App />
+  </Provider>,
+  rootElement
+);
+```
+
+5. Добавляем компорент Counter в App
+
+```jsx
+import React from "react";
+import Counter from "./Counter";
+
+export default function App() {
+  return (
+    <div className="App">
+      <Counter />
+    </div>
+  );
+}
+```
+
+### Полный код
+
+<iframe
+  src="https://codesandbox.io/embed/clever-fire-1wf88?fontsize=14&hidenavigation=1&theme=dark"
+  style={{
+    width: "100%",
+    height: "500px",
+    border: 0,
+    borderRadius: "4px",
+    overflow: "hidden",
+  }}
+  title="clever-fire-1wf88"
+  allow="accelerometer; ambient-light-sensor; camera; encrypted-media; geolocation; gyroscope; hid; microphone; midi; payment; usb; vr; xr-spatial-tracking"
+  sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+></iframe>
+
+## Практика 👩‍💻👨‍💻
+
+Используя код `Counter`, добавить следующий функционал
+
+- Добавить функцию `decrement`
+- Добавить функцию `reset`
+
+## Почитать 📚
+
+- [Redux official documentation](https://redux.js.org/)
+- [Краткое руководство по Redux для начинающих](https://tproger.ru/translations/redux-for-beginners/)
+- [Redux: шаг за шагом](https://medium.com/devschacht/redux-step-by-step-e6c42a9b00cd)
+- [Redux hooks](https://react-redux.js.org/api/hooks)
+
+## Посмотреть 👀
+
+- [Redux js для начинающих](https://monsterlessons.com/project/series/redux-js-dlya-nachinayushih)
+
+## ДЗ 🏡
+
+### CountDown component
+
+Пользуясь лецией [Жизненый цикл компонента](/react/lifecycle)
+
+Реализовать `<CountDown/>` компонент с использованием redux.
+
+Должен иметь следующие **actions**:
+
+- start
+- reset
+- stop
+- update

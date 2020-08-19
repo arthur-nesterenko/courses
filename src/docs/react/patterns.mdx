@@ -1,0 +1,335 @@
+---
+title: React patterns
+image: /assets/react-brand.png
+---
+
+import Admonition from "react-admonitions";
+
+## Stateless function
+
+Stateless function - отличный способ определить компоненты с высокой степенью многократного использования.
+Они не имеют собственное состояние; они просто функции.
+
+```jsx live=true
+const Greeting = () => <div>Hi there!</div>;
+
+render(<Greeting />);
+```
+
+Им передаются props.
+
+```jsx live=true
+const Greeting = (props, context) => (
+  <div style={{ color: props.color }}>Hi {props.name}!</div>
+);
+
+render(<Greeting color="red" name="John" />);
+```
+
+Они могут определять локальные переменные, где используется функциональный блок.
+
+```jsx live=true
+const Greeting = (props) => {
+  const style = {
+    fontWeight: "bold",
+    color: props.color,
+  };
+
+  return <div style={style}>{props.name}</div>;
+};
+
+render(<Greeting color="red" name="John" />);
+```
+
+## JSX spread attributes
+
+**JSX** spread attributes - это функция JSX. Это синтаксический сахар для передачи всех свойств объекта как атрибутов JSX.
+
+Эти два примера эквивалентны.
+
+```jsx
+// props written as attributes
+<main className="main" role="main">{children}</main>
+
+// props "spread" from object
+<main {...{className: "main", role: "main", children}} />
+
+```
+
+Используйте это для пересылки свойств в более глубокий компоненты.
+
+```jsx
+const MyDiv = (props) => <div className="myDiv" {...props} />;
+```
+
+Теперь мы можем ожидать, что MyDiv добавит атрибуты, к которым он относится, а также к тем, к которым он не относится.
+
+```jsx live=true
+const MyDiv = (props) => <div className="myDiv" {...props} />;
+
+// output: <div class="custom-className" data-id="my-div">Hello my custom div</di>
+
+render(
+  <MyDiv className="custom-className" data-id="my-div">
+    Hello my custom div
+  </MyDiv>
+);
+```
+
+<Admonition type="important">
+  Имейте в виду, что порядок имеет значение. Если `props.className` определен,
+  он перепишет `className`, определенный `MyDiv`
+</Admonition>
+
+```jsx
+<MyDiv className="custom-className" />
+// output: <div className="custom-className"></div>
+```
+
+Мы можем сделать так, чтобы MyDiv className всегда «выигрывал», поместив его после свойств распространения `({... props})`.
+
+```jsx
+const MyDiv = (props) => <div {...props} className="my-div" />;
+```
+
+Или же мы можем обьединить базовый `className` компонента кастомным приходящим из `props.className`
+
+```jsx
+const MyDiv = ({ className, ...props }) => (
+  <div className={["my-div", className].join(" ")} {...props} />
+);
+```
+
+## Destructuring arguments
+
+[Деструктуризация](https://learn.javascript.ru/destructuring) - это особенность ES2015.
+
+Он прекрасно сочетается с `props` в `Stateless` функциях.
+
+Эти примеры эквивалентны.
+
+```jsx
+const Greeting = (props) => <div>Hi {props.name}!</div>;
+
+const Greeting = ({ name }) => <div>Hi {name}!</div>;
+```
+
+[Rest operator](https://learn.javascript.ru/rest-parameters-spread-operator) (...) позволяет собрать все оставшиеся свойства в новом объекте.
+
+```jsx
+const Greeting = ({ name, ...props }) => <div>Hi {name}!</div>;
+```
+
+В свою очередь, этот объект может использовать [JSX Spread](/react/patterns#jsx-spread-attributes) для пересылки свойств в составной компонент.
+
+```jsx
+const Greeting = ({ name, ...props }) => <div {...props}>Hi {name}!</div>;
+```
+
+<Admonition type="warning">
+  Избегайте пересылки `props`, отличных от DOM, на составные компоненты.
+  Деструктуризация упрощает это, потому что вы можете создать новый объект props
+  без свойств, специфичных для компонента.
+</Admonition>
+
+## Conditional rendering
+
+<Admonition type="note">
+  Вы не можете использовать обычные условия if / else внутри определения
+  компонента. Условный (тернарный) оператор - ваш друг.
+</Admonition>
+
+**IF**
+
+```jsx
+{
+  condition && <span>Rendered when `truthy`</span>;
+}
+```
+
+**UNLESS**
+
+```jsx
+{
+  condition || <span>Rendered when `falsey`</span>;
+}
+```
+
+**IF-ELSE** (небольшой блок)
+
+```jsx
+{
+  condition ? (
+    <span>Rendered when `truthy`</span>
+  ) : (
+    <span>Rendered when `falsey`</span>
+  );
+}
+```
+
+**IF-ELSE** (большой блок)
+
+```jsx
+{
+  condition ? (
+    <span>Rendered when `truthy`</span>
+  ) : (
+    <span>Rendered when `falsey`</span>
+  );
+}
+```
+
+## Render callback
+
+Использование функции в качестве `children` по своей сути бесполезно.
+
+```jsx
+<div>{() => { return "hello world!"}()}</div>
+```
+
+Однако его можно использовать при создании компонентов для серьезных целей.
+Этот метод обычно называют `render callbacks`.
+
+При применении логика рендеринга может храниться в компоненте владельца, а не делегироваться.
+
+Вот компонент, который использует обратный вызов Render.
+
+**Это бесполезно, но для начала это простая иллюстрация.**
+
+```jsx
+const Width = ({ children }) => children(500);
+```
+
+Компонент вызывает `children` как функцию с некоторым количеством аргументов. Вот это число `500`
+
+Чтобы использовать этот компонент, мы даем ему функцию как дочерний элемент.
+
+```jsx live=true
+const Width = ({ children }) => children(500);
+
+render(<Width>{(width) => <div>window is {width}</div>}</Width>);
+```
+
+При такой настройке мы можем использовать эту ширину для принятия решений о рендеринге.
+
+```jsx
+<Width>
+  {(width) => (width > 600 ? <div>min-width requirement met!</div> : null)}
+</Width>
+```
+
+Если мы планируем часто использовать это условие, мы можем определить другие компоненты для инкапсуляции повторно используемой логики.
+
+```jsx live=true
+const Width = ({ children }) => children(500);
+
+const MinWidth = ({ minWidth, children }) => (
+  <Width>{(width) => (width > minWidth ? children : null)}</Width>
+);
+
+render(
+  <React.Fragment>
+    <div>
+      <MinWidth minWidth={200}>Visible</MinWidth>
+    </div>
+    <MinWidth minWidth={501}>Hidden</MinWidth>
+  </React.Fragment>
+);
+```
+
+Очевидно, что компонент static Width бесполезен, но есть компонент, который следит за окном браузера.
+
+Вот пример реализации.
+**Resizer Component**
+
+```jsx live=true
+class Resizer extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      width: props.initialWidth,
+    };
+  }
+
+  componentDidMount() {
+    window.addEventListener("resize", this.onResize.bind(this));
+  }
+
+  componentWillUnmount() {
+    window.removeEventListener("resize", this.onResize.bind(this));
+  }
+
+  onResize(e) {
+    this.setState({ width: e.target.innerWidth });
+  }
+
+  render() {
+    return this.props.children(this.state);
+  }
+}
+Resizer.defaultProps = {
+  initialWidth: 200,
+};
+
+render(<Resizer>{({ width }) => <div>Window width is {width}</div>}</Resizer>);
+```
+
+Теперь если вы попробуете изменить размер окна вы увидите актуальную ширину екрана.
+
+## Higher-order component
+
+[Функция высшего порядка](https://webdevblog.ru/chto-takoe-funkciya-vysshego-poryadka/) (HOC) - это функция, которая принимает и / или возвращает функцию.
+Итак, что такое компонент высшего порядка?
+
+Если вы уже используете компоненты контейнера, это просто общие контейнеры, заключенные в функцию.
+
+Начнем с нашего stateless компонента `<Greeting/>`.
+
+```jsx live=true
+const Greeting = ({ name }) => {
+  if (!name) {
+    return <div>Connecting...</div>;
+  }
+
+  return <div>Hi {name}!</div>;
+};
+
+render(
+  <React.Fragment>
+    <Greeting />
+    <Greeting name="John" />
+  </React.Fragment>
+);
+```
+
+Если он получит `props.name`, он отобразит эти данные. В противном случае он скажет, что это «Connecting...».
+Теперь о функции высшего порядка.
+
+```jsx
+const withName = (ComposedComponent) =>
+  class extends React.Component {
+    constructor() {
+      super();
+      this.state = { name: "" };
+    }
+
+    componentDidMount() {
+      // this would fetch or connect to a store
+      this.setState({ name: "Michael" });
+    }
+
+    render() {
+      return <ComposedComponent {...this.props} name={this.state.name} />;
+    }
+  };
+```
+
+Это просто функция, которая возвращает компонент, который отображает компонент, который мы передали в качестве аргумента.
+
+На последнем этапе нам нужно обернуть ваш компонент Greeting в Connect.
+
+```jsx
+const ConnectedMyComponent = withName(Greeting);
+```
+
+Это мощный шаблон для обеспечения выборки и предоставления данных любому количеству stateless компонентов.
