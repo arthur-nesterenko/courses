@@ -3,8 +3,9 @@
   "private": true,
   "version": "1.0.0",
   "description": "Courses",
-  "author": "Arthur Nesterenko",
+  "author": "Arthur Nesterenko <arthur.nesterenko.dev@gmail.com>",
   "license": "MIT",
+  "homepage": "https://courses.arthur-nesterenko.dev",
   "dependencies": {
     "@emotion/core": "^10.0.34",
     "@emotion/styled": "^10.0.27",
@@ -19,6 +20,7 @@
     "gatsby-plugin-sitemap": "^2.2.26",
     "prop-types": "^15.7.2",
     "react": "latest",
+    "react-admonitions": "^2.1.0",
     "react-dom": "latest",
     "react-headroom": "^3.0.0",
     "react-icons": "^3.10.0",
