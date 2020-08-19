@@ -14,7 +14,7 @@ const Container = styled.div`
 
   button {
     border: none;
-    background: #fff;
+    background: transparent;
     cursor: pointer;
     margin-right: 16px;
   }

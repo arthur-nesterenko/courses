@@ -18,11 +18,18 @@ export default function GlobalStyle() {
           h4,
           h5,
           h6 {
-            font-weight: 00;
+            font-weight: 900;
           }
 
           a {
             word-break: break-all;
+          }
+
+          strong {
+            & > * {
+              font-weight: 900;
+              color: black;
+            }
           }
 
           ${Heading} {
