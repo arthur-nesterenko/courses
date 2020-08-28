@@ -22,6 +22,8 @@
       link: "/react/spa-routing"
     - label: "GraphQL"
       link: "/react/graphql"
+    - label: "JWT & Authorization"
+      link: "/react/jwt"
     - label: "React patterns"
       link: "/react/patterns"
 - label: "Redux"
