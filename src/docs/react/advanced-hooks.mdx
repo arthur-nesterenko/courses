@@ -1,0 +1,148 @@
+---
+title: Hooks
+---
+
+Почитать про базовые хуки useState и useEffect вы можете [тут](/react/base-hooks).
+
+import Admonition from "react-admonitions";
+
+## useRef
+
+## useReducer
+
+## useCallback
+
+## useMemo
+
+## useContext
+
+## Пользовательские Hooks
+
+Одной из самых крутых особенностей Hooks является то, что вы можете легко делиться логикой между несколькими компонентами, создавая собственный Hook.
+
+### useToggle
+
+```javascript
+import React from "react";
+
+const useToggle = (initialState) => {
+  const [on, setOn] = React.useState(initialState);
+
+  const onToggle = React.useCallback(() => setOn((prev) => !prev), []);
+  const setToggle = React.useCallback((nextValue) => setOn(nextValue), []);
+
+  return [on, onToggle, setToggle];
+};
+
+export default useToggle;
+```
+
+**Использование:**
+
+```jsx live=true inline=true
+const App = () => {
+  const [isOpen, onToggle, setOpen] = useToggle(false);
+  return (
+    <div>
+      <button style={btnStyles} onClick={onToggle}>
+        Toggle
+      </button>
+      <button style={btnStyles} onClick={() => setOpen(true)}>
+        Open
+      </button>
+      <button style={btnStyles} onClick={() => setOpen(false)}>
+        Close
+      </button>
+      <p>{isOpen ? "Opened" : "Closed"}</p>
+    </div>
+  );
+};
+
+const btnStyles = {
+  margin: 5,
+  padding: 10,
+};
+
+const useToggle = (initialState) => {
+  const [on, setOn] = React.useState(initialState);
+  const onToggle = React.useCallback(() => setOn((prev) => !prev), []);
+  const setToggle = React.useCallback((nextValue) => setOn(nextValue), []);
+
+  return [on, onToggle, setToggle];
+};
+render(<App />);
+```
+
+### useWindowResizer
+
+```javascript
+const useWindow = () => {
+  const [data, setData] = React.useState({ width: 0, heigth: 0 });
+
+  React.useEffect(() => {
+    const onResize = (e) => {
+      setData({
+        width: e.target.innerWidth,
+        height: e.target.innerHeigth,
+      });
+    };
+
+    window.addEventListener("resize", onResize);
+
+    return () => {
+      window.removeEventListener("resize", onResize);
+    };
+  }, []);
+
+  return data;
+};
+```
+
+```javascript
+const useAttachEvent = (event, handler, node = document) => {
+  React.useEffect(() => {
+    node.addEventListener(event, handler);
+
+    return () => {
+      node.removeEventListener(event, handler);
+    };
+  }, []);
+};
+```
+
+Использование
+
+```jsx
+const App = () => {
+  useAttachEvent("click", () => console.log("Hello"));
+  // attach event to window
+  useAttachEvent("click", () => console.log("Hello"), window);
+
+  return <div>App</div>;
+};
+```
+
+### useFetch
+
+```javascript
+const useFetch = (url) => {
+  const [data, setData] = React.useState(null);
+
+  const onFetchData = async () => {
+    try {
+      const response = await fetch(url);
+
+      const data = await response.json();
+      setData(data);
+    } catch (e) {
+      setData(null);
+    }
+  };
+
+  React.useEffect(() => {
+    onFetchData();
+  }, [url]);
+
+  return data;
+};
+```
