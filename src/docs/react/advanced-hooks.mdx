@@ -27,7 +27,7 @@ useRef возвращает изменяемый ref-объект, свойст�
 
 ```jsx lineNumber=true
 function Focus() {
-  textInput = React.useRef;
+  const textInput = React.useRef();
 
   const focusTextInput = () => textInput.current.focus();
 
@@ -40,7 +40,7 @@ function Focus() {
 }
 ```
 
-useRef этл контейнер, который может содержать изменяемое значение в своём свойстве .current.
+useRef это контейнер, который может содержать изменяемое значение в своём свойстве .current.
 
 <Admonition type="note">
   Хук useRef() полезен не только установкой атрибута с рефом как вы привыкли
@@ -470,7 +470,6 @@ const useAttachEvent = (event, handler, node = document) => {
 
 ```jsx
 const App = () => {
-  _;
   useAttachEvent("click", () => console.log("Hello"));
   // attach event to window
   useAttachEvent("click", () => console.log("Hello"), window);
@@ -533,20 +532,20 @@ function Component({ ms }) {
 
 ```jsx
 const delay = 1000;
-const Demo = () => {
+const TimeOut = () => {
   const [count, setCount] = React.useState(0);
 
   const [isRunning, start, stop] = useInterval(() => {
     setCount(count + 1);
   }, delay);
 
+  const onClick = isRunning ? stop : start;
+
   return (
     <div>
       <h1>count: {count}</h1>
       <div>
-        <button onClick={() => (isRunning ? stop : start)}>
-          {isRunning ? "stop" : "start"}
-        </button>
+        <button onClick={onClick}>{isRunning ? "stop" : "start"}</button>
       </div>
     </div>
   );
