@@ -48,5 +48,7 @@
       link: "/redux/redux-async-flow"
     - label: "Redux Saga"
       link: "/redux/saga"
+- label: "Deployment"
+  link: "/deployment"
 - label: "Projects"
   link: "http://doc.a-level.com.ua/frontend-graphql-backs/"
